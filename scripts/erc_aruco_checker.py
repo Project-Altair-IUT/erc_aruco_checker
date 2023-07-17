@@ -37,7 +37,6 @@ class ErcArUcoChecker:
         pkg_dir = roslib.packages.get_pkg_dir("erc_aruco_checker")
         sim = rospy.get_param('~sim')
         self.tolerance = rospy.get_param('~tolerance')
-
         if sim:
             rospy.loginfo("Running in simulation")
             config_file = pkg_dir + "/config/sim_config.yaml"
@@ -55,6 +54,7 @@ class ErcArUcoChecker:
 
     def handle_score(self,req):
         points = 0.0
+        corrects = []
         for a in dir(req):
             if a.startswith('tag'):
                 tag_name = "req." + a
@@ -64,8 +64,11 @@ class ErcArUcoChecker:
                 dist = np.linalg.norm(user_position-gt_position)
                 if dist <= self.tolerance and self.gt_config[a] != [0,0,0]:
                     points = points + 1.0
+                    correct_id = a.split(":")[0]
+                    correct_id = correct_id[3:]
+                    corrects.append(int(correct_id))
 
-        return points
+        return points, corrects
 
 if __name__ == '__main__':
     try:
